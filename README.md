@@ -1,73 +1,100 @@
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
-Binance Trade Data Analysis Report
-==================================
+📊 Binance Trade Data Analysis
+==============================
 
-Methodology and Findings
-------------------------
+📌 Overview
+-----------
 
-### 1\. Data Extraction and Cleaning
+This project analyzes Binance trade data to evaluate account performance based on key financial metrics. The dataset (`TRADES_CopyTr_90D_ROI.csv`) contains account identifiers (`Port_IDs`) and trade history stored as JSON-like strings. The analysis extracts, cleans, and processes this data to generate performance insights and rankings.
 
-The dataset (`TRADES_CopyTr_90D_ROI.csv`) contains two primary columns: `Port_IDs` (unique account identifiers) and `Trade_History`. The `Trade_History` column stores a JSON‐like string representing a list of trade records.
+📂 Dataset
+----------
 
-*   A parsing function attempts to convert each `Trade_History` string into a list of dictionaries using `json.loads`, fixes for single quotes, and `ast.literal_eval` as a fallback.
-*   The extracted trade records are flattened into a new DataFrame with one row per trade, with the associated `Port_IDs` added to each record.
-*   The script then checks for required fields (e.g. `timestamp` or `time`, `side`, `positionSide`, `price`, `quantity`, `qty`, and `realizedProfit`) and converts the timestamp to a datetime object.
+Download the dataset from the following link:
 
-### 2\. Feature Engineering
+🔗 [Binance Trade Dataset](https://drive.google.com/drive/folders/1ioZ56B5-zTmFuPrT7IihjOVozAgrXxhl?usp=sharing)
 
-Key text fields (`side` and `positionSide`) are standardized to lowercase. A new column `tradeType` is created by concatenating `side` and `positionSide`. Additionally, if an `activeBuy` column is present, it is used to derive a `positionStatus` (either `open` or `close`). Trades are also classified by outcome (`win`, `loss`, or `breakeven`) based on their `realizedProfit`.
+### 🔄 How to Use the Dataset
 
-### 3\. Financial Metrics Calculation
+*   Download the dataset (`TRADES_CopyTr_90D_ROI.csv`) from the provided link.
+*   Place the file in the project directory, alongside the analysis script.
+*   The script will automatically process the file and generate structured output.
 
-For each account (`Port_IDs`), the following metrics are computed:
+🔍 Features
+-----------
 
-*   **PnL (Profit and Loss):** Sum of `realizedProfit` from closing trades.
-*   **Invested Capital:** Sum of `quantity` for opening trades (if available).
-*   **ROI (Return on Investment):** Calculated as `PnL / Invested Capital` (if invested capital > 0).
-*   **Sharpe Ratio:** Based on trade-level returns computed as `realizedProfit / quantity` for closing trades.
-*   **Maximum Drawdown (MDD):** Derived from the cumulative PnL curve of closing trades.
-*   **Win Positions and Win Rate:**
-    *   `WinPositions`: Count of closing trades with a positive `realizedProfit`.
-    *   `TotalPositions`: Total number of closing trades.
-    *   `WinRate`: Ratio of win positions to total positions.
+*   **Data Parsing & Cleaning**: Converts trade history from JSON-like strings into structured data.
+*   **Feature Engineering**: Standardizes text fields, categorizes trades, and derives key financial indicators.
+*   **Financial Metrics Calculation**: Computes ROI, PnL, Sharpe Ratio, Maximum Drawdown (MDD), and Win Rate.
+*   **Ranking Algorithm**: Uses a weighted composite score to rank accounts based on performance.
+*   **Result Export**: Generates CSV files (`Account_Metrics.csv` & `Top_20_Accounts.csv`) for further analysis.
 
-### 4\. Ranking Algorithm
+📊 Methodology
+--------------
 
-The calculated metrics are first normalized using min–max normalization. Since a lower drawdown (MDD) is preferable, its normalized value is inverted. A composite score is then computed as a weighted sum of the normalized metrics:
+### 1️⃣ Data Extraction & Cleaning
 
-*   ROI: 25%
-*   PnL: 25%
-*   Sharpe Ratio: 20%
-*   Win Rate: 20%
-*   Inverted MDD: 10%
+*   Parses the `Trade_History` column (JSON-like string) into structured trade records.
+*   Converts timestamps, standardizes text fields (`side`, `positionSide`), and filters essential trade data.
 
-Accounts are sorted by this composite score, and the top 20 accounts are selected.
+### 2️⃣ Feature Engineering
 
-### 5\. Output Deliverables
+*   Creates new features like `tradeType`, `positionStatus`, and `tradeOutcome`.
+*   Classifies trades into categories (`win`, `loss`, `breakeven`) based on `realizedProfit`.
 
-*   **Account\_Metrics.csv:** Contains full financial metrics for each account.
-*   **Top\_20\_Accounts.csv:** Contains the top 20 accounts ranked by the composite score.
+### 3️⃣ Financial Metrics Calculation
 
-### 6\. Summary
+*   **ROI (Return on Investment):** `PnL / Invested Capital`
+*   **PnL (Profit & Loss):** Sum of `realizedProfit` from closing trades.
+*   **Sharpe Ratio:** Trade-level returns to assess risk-adjusted performance.
+*   **Maximum Drawdown (MDD):** Measures peak-to-trough loss in PnL.
+*   **Win Rate:** Percentage of profitable trades.
 
-This analysis framework enables a comprehensive evaluation of Binance account performance using detailed trade data. The modular approach (from parsing JSON to computing advanced metrics) allows for future adjustments and ensures accurate identification of top-performing accounts.
+### 4️⃣ Ranking Algorithm
 
-### 7\. How to Run and What to Expect
+*   Normalizes financial metrics and applies weighted scoring:
 
-**How to Run:**
+*   ROI (25%)
+*   PnL (25%)
+*   Sharpe Ratio (20%)
+*   Win Rate (20%)
+*   Inverted MDD (10%)
 
-*   Place the CSV file `TRADES_CopyTr_90D_ROI.csv` in the same directory as the Python script.
-*   Ensure that Python (with the required packages: `pandas` and `numpy`) is installed.
-*   Run the script using a command like: `python Analysis_Script.py` (or run it within a Jupyter Notebook).
+*   The top 20 accounts are selected based on composite ranking.
 
-**What to Expect:**
+### 5️⃣ Output Deliverables
 
-*   The script will load the raw CSV and attempt to parse the `Trade_History` field into individual trade records.
-*   It will perform data cleaning and feature engineering to extract necessary trade details (timestamp, side, positionSide, price, quantity, qty, realizedProfit).
-*   It calculates financial metrics for each account including ROI, PnL, Sharpe Ratio, Maximum Drawdown (MDD), Win Positions, Total Positions, and Win Rate.
-*   The script normalizes these metrics, computes a composite score, and ranks the accounts.
-*   Two CSV files will be generated:
-    *   `Account_Metrics.csv` – containing the full set of calculated metrics for each account.
-    *   `Top_20_Accounts.csv` – containing the top 20 accounts based on the composite ranking.
-*   Console output will indicate when the analysis is complete and where the CSV files have been saved.
+*   `Account_Metrics.csv` – Full financial metrics for all accounts.
+*   `Top_20_Accounts.csv` – Top-performing accounts based on composite score.
+
+🛠️ How to Run
+--------------
+
+1.  Clone the repository:
+    
+        git clone https://github.com/PIYUSH-MISHRA-00/Binance-Trade-Data-Analysis.git
+        cd Binance-Trade-Data-Analysis
+    
+2.  Install dependencies:
+    
+        pip install -r requirements.txt
+    
+3.  Download the dataset and place it in the project directory.
+4.  Run the script:
+    
+        python Analysis_Script.py
+    
+5.  Check the output CSV files in the results directory.
+
+🎯 Expected Results
+-------------------
+
+*   A structured breakdown of each trade's financial impact.
+*   Identification of top-performing accounts.
+*   Insights into profitability, risk, and trading efficiency.
+
+🏆 Use Case
+-----------
+
+This tool is useful for traders, analysts, and fund managers to evaluate trading performance, optimize strategies, and manage risk effectively.
